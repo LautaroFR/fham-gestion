@@ -2,28 +2,40 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Order;
 use App\Models\Customer;
+use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class OrderController extends Controller
 {
     public function index()
     {
-        $orders = Order::with(['customer', 'payments'])->latest()->paginate(20);
+        $orders = Order::with(['customer', 'payments'])
+            ->orderByDesc('order_date')
+            ->orderByDesc('id')
+            ->paginate(20);
+
         return view('orders.index', compact('orders'));
     }
 
     public function create()
     {
         $customers = Customer::orderBy('name')->get();
-        return view('orders.create', compact('customers'));
+        $order = new Order([
+            'order_date' => Carbon::today(),
+            'status' => 'Presupuesto',
+            'cost' => 0,
+        ]);
+
+        return view('orders.create', compact('customers', 'order'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
+            'order_date' => 'nullable|date',
             'project' => 'nullable|max:255',
             'room' => 'nullable|max:255',
             'title' => 'required|max:255',
@@ -34,7 +46,9 @@ class OrderController extends Controller
             'notes' => 'nullable',
         ]);
 
+        $validated['order_date'] = $validated['order_date'] ?: Carbon::today()->toDateString();
         $validated['cost'] = $validated['cost'] ?? 0;
+
         Order::create($validated);
 
         return redirect()->route('orders.index')->with('success', 'Pedido creado.');
@@ -43,6 +57,7 @@ class OrderController extends Controller
     public function edit(Order $order)
     {
         $customers = Customer::orderBy('name')->get();
+
         return view('orders.edit', compact('order', 'customers'));
     }
 
@@ -50,6 +65,7 @@ class OrderController extends Controller
     {
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
+            'order_date' => 'nullable|date',
             'project' => 'nullable|max:255',
             'room' => 'nullable|max:255',
             'title' => 'required|max:255',
@@ -60,7 +76,9 @@ class OrderController extends Controller
             'notes' => 'nullable',
         ]);
 
+        $validated['order_date'] = $validated['order_date'] ?: Carbon::today()->toDateString();
         $validated['cost'] = $validated['cost'] ?? 0;
+
         $order->update($validated);
 
         return redirect()->route('orders.index')->with('success', 'Pedido actualizado.');
@@ -69,6 +87,7 @@ class OrderController extends Controller
     public function destroy(Order $order)
     {
         $order->delete();
+
         return redirect()->route('orders.index')->with('success', 'Pedido eliminado.');
     }
 }

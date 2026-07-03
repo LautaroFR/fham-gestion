@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
@@ -11,6 +11,7 @@ class Order extends Model
 
     protected $fillable = [
         'customer_id',
+        'order_date',
         'project',
         'room',
         'title',
@@ -22,7 +23,10 @@ class Order extends Model
     ];
 
     protected $casts = [
+        'order_date' => 'date',
         'delivery_date' => 'date',
+        'price' => 'decimal:2',
+        'cost' => 'decimal:2',
     ];
 
     public function customer()
@@ -35,11 +39,6 @@ class Order extends Model
         return $this->hasMany(Payment::class);
     }
 
-    public function getProfitAttribute()
-    {
-        return $this->price - $this->cost;
-    }
-
     public function getCollectedAttribute()
     {
         return $this->payments()->sum('amount');
@@ -48,5 +47,12 @@ class Order extends Model
     public function getBalanceAttribute()
     {
         return $this->price - $this->collected;
+    }
+
+    public function getProfitAttribute()
+    {
+        return $this->cost > 0
+            ? $this->price - $this->cost
+            : $this->price * 2 / 3;
     }
 }
