@@ -2,64 +2,74 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
 use App\Models\Payment;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $payments = Payment::with('order.customer')
+            ->latest('payment_date')
+            ->paginate(20);
+
+        return view('payments.index', compact('payments'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        $orders = Order::with('customer')
+            ->orderByDesc('created_at')
+            ->get();
+
+        return view('payments.create', compact('orders'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'order_id'=>'required|exists:orders,id',
+            'payment_date'=>'required|date',
+            'amount'=>'required|numeric|min:1',
+            'method'=>'nullable|max:100',
+            'reference'=>'nullable|max:255',
+            'notes'=>'nullable'
+        ]);
+
+        Payment::create($validated);
+
+        return redirect()->route('payments.index')
+            ->with('success','Cobro registrado.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Payment $payment)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Payment $payment)
     {
-        //
+        $orders = Order::with('customer')->get();
+
+        return view('payments.edit', compact('payment','orders'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Payment $payment)
     {
-        //
+        $validated = $request->validate([
+            'order_id'=>'required|exists:orders,id',
+            'payment_date'=>'required|date',
+            'amount'=>'required|numeric|min:1',
+            'method'=>'nullable|max:100',
+            'reference'=>'nullable|max:255',
+            'notes'=>'nullable'
+        ]);
+
+        $payment->update($validated);
+
+        return redirect()->route('payments.index');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Payment $payment)
     {
-        //
+        $payment->delete();
+
+        return back();
     }
 }
