@@ -10,7 +10,6 @@ class CustomerController extends Controller
     public function index()
     {
         $customers = Customer::orderBy('name')->paginate(20);
-
         return view('customers.index', compact('customers'));
     }
 
@@ -26,22 +25,19 @@ class CustomerController extends Controller
             'phone' => 'nullable|max:100',
             'email' => 'nullable|email|max:255',
             'address' => 'nullable|max:255',
-            'notes' => 'nullable'
+            'notes' => 'nullable',
         ]);
 
         Customer::create($validated);
 
-        return redirect()
-            ->route('customers.index')
-            ->with('success', 'Cliente creado correctamente.');
+        return redirect()->route('customers.index')->with('success', 'Cliente creado correctamente.');
     }
 
     public function show(Customer $customer)
-{
-    $customer->load('orders');
-
-    return view('customers.show', compact('customer'));
-}
+    {
+        $customer->load(['orders.payments']);
+        return view('customers.show', compact('customer'));
+    }
 
     public function edit(Customer $customer)
     {
@@ -55,22 +51,17 @@ class CustomerController extends Controller
             'phone' => 'nullable|max:100',
             'email' => 'nullable|email|max:255',
             'address' => 'nullable|max:255',
-            'notes' => 'nullable'
+            'notes' => 'nullable',
         ]);
 
         $customer->update($validated);
 
-        return redirect()
-            ->route('customers.index')
-            ->with('success', 'Cliente actualizado.');
+        return redirect()->route('customers.index')->with('success', 'Cliente actualizado.');
     }
 
     public function destroy(Customer $customer)
     {
         $customer->delete();
-
-        return redirect()
-            ->route('customers.index')
-            ->with('success', 'Cliente eliminado.');
+        return redirect()->route('customers.index')->with('success', 'Cliente eliminado.');
     }
 }

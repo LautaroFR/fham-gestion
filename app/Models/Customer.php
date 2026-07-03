@@ -35,10 +35,7 @@ class Customer extends Model
 
     public function getTotalCollectedAttribute()
     {
-        return Payment::whereIn(
-            'order_id',
-            $this->orders()->pluck('id')
-        )->sum('amount');
+        return Payment::whereIn('order_id', $this->orders()->pluck('id'))->sum('amount');
     }
 
     public function getPendingAttribute()

@@ -21,28 +21,32 @@ class Order extends Model
         'notes',
     ];
 
+    protected $casts = [
+        'delivery_date' => 'date',
+    ];
+
     public function customer()
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
     }
 
     public function getProfitAttribute()
     {
         return $this->price - $this->cost;
     }
-    
-    public function payments()
-{
-    return $this->hasMany(Payment::class);
-}
 
-public function getCollectedAttribute()
-{
-    return $this->payments()->sum('amount');
-}
+    public function getCollectedAttribute()
+    {
+        return $this->payments()->sum('amount');
+    }
 
-public function getBalanceAttribute()
-{
-    return $this->price - $this->collected;
-}
+    public function getBalanceAttribute()
+    {
+        return $this->price - $this->collected;
+    }
 }

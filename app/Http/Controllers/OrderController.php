@@ -10,15 +10,13 @@ class OrderController extends Controller
 {
     public function index()
     {
-        $orders = Order::with('customer')->latest()->paginate(20);
-
+        $orders = Order::with(['customer', 'payments'])->latest()->paginate(20);
         return view('orders.index', compact('orders'));
     }
 
     public function create()
     {
         $customers = Customer::orderBy('name')->get();
-
         return view('orders.create', compact('customers'));
     }
 
@@ -37,7 +35,6 @@ class OrderController extends Controller
         ]);
 
         $validated['cost'] = $validated['cost'] ?? 0;
-
         Order::create($validated);
 
         return redirect()->route('orders.index')->with('success', 'Pedido creado.');
@@ -46,7 +43,6 @@ class OrderController extends Controller
     public function edit(Order $order)
     {
         $customers = Customer::orderBy('name')->get();
-
         return view('orders.edit', compact('order', 'customers'));
     }
 
@@ -65,7 +61,6 @@ class OrderController extends Controller
         ]);
 
         $validated['cost'] = $validated['cost'] ?? 0;
-
         $order->update($validated);
 
         return redirect()->route('orders.index')->with('success', 'Pedido actualizado.');
@@ -74,7 +69,6 @@ class OrderController extends Controller
     public function destroy(Order $order)
     {
         $order->delete();
-
         return redirect()->route('orders.index')->with('success', 'Pedido eliminado.');
     }
 }

@@ -18,4 +18,8 @@ class Expense extends Model
         'method',
         'notes',
     ];
+
+    protected $casts = [
+        'expense_date' => 'date',
+    ];
 }
