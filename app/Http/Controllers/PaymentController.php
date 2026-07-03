@@ -10,15 +10,31 @@ class PaymentController extends Controller
 {
     public function index()
     {
-        $payments = Payment::with('order.customer')->latest('payment_date')->paginate(20);
+        $payments = Payment::with('order.customer')
+            ->orderByDesc('payment_date')
+            ->paginate(20);
+
         return view('payments.index', compact('payments'));
     }
 
     public function create(Request $request)
     {
-        $orders = Order::with('customer')->orderByDesc('created_at')->get();
-        $selectedOrder = $request->get('order_id');
-        return view('payments.create', compact('orders', 'selectedOrder'));
+        $orders = Order::with('customer')
+            ->orderByDesc('order_date')
+            ->get();
+
+        $selectedOrder = null;
+
+        if ($request->filled('order_id')) {
+            $selectedOrder = Order::with('customer')->find($request->order_id);
+        }
+
+        $payment = new Payment([
+            'order_id' => $request->order_id,
+            'payment_date' => now()->toDateString(),
+        ]);
+
+        return view('payments.create', compact('orders', 'payment', 'selectedOrder'));
     }
 
     public function store(Request $request)
@@ -32,15 +48,20 @@ class PaymentController extends Controller
             'notes' => 'nullable',
         ]);
 
-        Payment::create($validated);
+        $payment = Payment::create($validated);
 
-        return redirect()->route('payments.index')->with('success', 'Cobro registrado.');
+        return redirect()
+            ->route('orders.show', $payment->order_id)
+            ->with('success', 'Cobro registrado.');
     }
 
     public function edit(Payment $payment)
     {
-        $orders = Order::with('customer')->orderByDesc('created_at')->get();
-        return view('payments.edit', compact('payment', 'orders'));
+        $orders = Order::with('customer')
+            ->orderByDesc('order_date')
+            ->get();
+
+        return view('payments.edit', compact('payment','orders'));
     }
 
     public function update(Request $request, Payment $payment)
@@ -56,12 +77,19 @@ class PaymentController extends Controller
 
         $payment->update($validated);
 
-        return redirect()->route('payments.index')->with('success', 'Cobro actualizado.');
+        return redirect()
+            ->route('orders.show', $payment->order_id)
+            ->with('success', 'Cobro actualizado.');
     }
 
     public function destroy(Payment $payment)
     {
+        $orderId = $payment->order_id;
+
         $payment->delete();
-        return redirect()->route('payments.index')->with('success', 'Cobro eliminado.');
+
+        return redirect()
+            ->route('orders.show', $orderId)
+            ->with('success', 'Cobro eliminado.');
     }
 }

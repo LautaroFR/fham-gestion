@@ -2,18 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Customer;
 use App\Models\Order;
+use App\Models\Customer;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 
 class OrderController extends Controller
 {
     public function index()
     {
-        $orders = Order::with(['customer', 'payments'])
+        $orders = Order::with(['customer','payments'])
             ->orderByDesc('order_date')
-            ->orderByDesc('id')
             ->paginate(20);
 
         return view('orders.index', compact('orders'));
@@ -23,7 +21,7 @@ class OrderController extends Controller
     {
         $customers = Customer::orderBy('name')->get();
         $order = new Order([
-            'order_date' => Carbon::today(),
+            'order_date' => now()->toDateString(),
             'status' => 'Presupuesto',
             'cost' => 0,
         ]);
@@ -46,12 +44,23 @@ class OrderController extends Controller
             'notes' => 'nullable',
         ]);
 
-        $validated['order_date'] = $validated['order_date'] ?: Carbon::today()->toDateString();
+        $validated['order_date'] = $validated['order_date'] ?: now()->toDateString();
         $validated['cost'] = $validated['cost'] ?? 0;
 
-        Order::create($validated);
+        $order = Order::create($validated);
 
-        return redirect()->route('orders.index')->with('success', 'Pedido creado.');
+        return redirect()
+            ->route('orders.show', $order)
+            ->with('success', 'Pedido creado.');
+    }
+
+    public function show(Order $order)
+    {
+        $order->load(['customer','payments' => function ($query) {
+            $query->orderByDesc('payment_date');
+        }]);
+
+        return view('orders.show', compact('order'));
     }
 
     public function edit(Order $order)
@@ -76,18 +85,22 @@ class OrderController extends Controller
             'notes' => 'nullable',
         ]);
 
-        $validated['order_date'] = $validated['order_date'] ?: Carbon::today()->toDateString();
+        $validated['order_date'] = $validated['order_date'] ?: now()->toDateString();
         $validated['cost'] = $validated['cost'] ?? 0;
 
         $order->update($validated);
 
-        return redirect()->route('orders.index')->with('success', 'Pedido actualizado.');
+        return redirect()
+            ->route('orders.show', $order)
+            ->with('success', 'Pedido actualizado.');
     }
 
     public function destroy(Order $order)
     {
         $order->delete();
 
-        return redirect()->route('orders.index')->with('success', 'Pedido eliminado.');
+        return redirect()
+            ->route('orders.index')
+            ->with('success', 'Pedido eliminado.');
     }
 }
