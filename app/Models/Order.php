@@ -30,4 +30,19 @@ class Order extends Model
     {
         return $this->price - $this->cost;
     }
+    
+    public function payments()
+{
+    return $this->hasMany(Payment::class);
+}
+
+public function getCollectedAttribute()
+{
+    return $this->payments()->sum('amount');
+}
+
+public function getBalanceAttribute()
+{
+    return $this->price - $this->collected;
+}
 }

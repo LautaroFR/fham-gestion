@@ -15,6 +15,8 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('customers', CustomerController::class);
 
     Route::resource('orders', App\Http\Controllers\OrderController::class);
+
+    Route::resource('payments', App\Http\Controllers\PaymentController::class);
 });
 
 require __DIR__.'/auth.php';

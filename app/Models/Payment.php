@@ -15,7 +15,11 @@ class Payment extends Model
         'amount',
         'method',
         'reference',
-        'notes',
+        'notes'
+    ];
+
+    protected $casts = [
+        'payment_date' => 'date',
     ];
 
     public function order()
