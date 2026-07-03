@@ -1,0 +1,147 @@
+<x-app-layout>
+
+<div class="max-w-7xl mx-auto py-6">
+
+    <div class="flex justify-between items-center mb-6">
+
+        <div>
+            <h2 class="text-2xl font-bold">Clientes</h2>
+            <p class="text-gray-500">
+                {{ $customers->total() }} cliente(s)
+            </p>
+        </div>
+
+        <a href="{{ route('customers.create') }}"
+           class="inline-flex items-center px-4 py-2 bg-blue-600 rounded-md text-sm font-semibold text-white hover:bg-blue-700">
+            + Nuevo Cliente
+        </a>
+
+    </div>
+
+    @if(session('success'))
+        <div class="bg-green-100 border border-green-300 rounded p-3 mb-4">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    <table class="w-full bg-white rounded-lg shadow overflow-hidden">
+
+        <thead class="bg-gray-100">
+
+            <tr>
+
+                <th class="p-3 text-left">Cliente</th>
+
+                <th class="p-3 text-left">Teléfono</th>
+
+                <th class="p-3 text-left">Email</th>
+
+                <th class="p-3 text-center">Pedidos</th>
+
+                <th class="p-3 text-right">Facturado</th>
+
+                <th class="p-3 text-right">Pendiente</th>
+
+                <th class="p-3 text-right">Acciones</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+        @forelse($customers as $customer)
+
+            <tr class="border-b hover:bg-gray-50">
+
+                <td class="p-3 font-semibold">
+<a href="{{ route('customers.show',$customer) }}"
+   class="text-blue-600 hover:underline font-semibold">
+
+    {{ $customer->name }}
+
+</a>                </td>
+
+                <td class="p-3">
+                    {{ $customer->phone }}
+                </td>
+
+                <td class="p-3">
+                    {{ $customer->email }}
+                </td>
+
+                <td class="p-3 text-center">
+                    {{ $customer->orders_count }}
+                </td>
+
+                <td class="p-3 text-right">
+
+                    $ {{ number_format($customer->total_sold,0,',','.') }}
+
+                </td>
+
+                <td class="p-3 text-right font-semibold text-red-600">
+
+                    $ {{ number_format($customer->pending,0,',','.') }}
+
+                </td>
+
+                <td class="p-3 text-right">
+
+                    <a href="{{ route('customers.edit',$customer) }}"
+                       class="text-blue-600 hover:underline">
+
+                        Editar
+
+                    </a>
+
+                    <form
+                        method="POST"
+                        action="{{ route('customers.destroy',$customer) }}"
+                        class="inline">
+
+                        @csrf
+                        @method('DELETE')
+
+                        <button
+                            onclick="return confirm('¿Eliminar cliente?')"
+                            class="text-red-600 ml-4 hover:underline">
+
+                            Eliminar
+
+                        </button>
+
+                    </form>
+
+                </td>
+
+            </tr>
+
+        @empty
+
+            <tr>
+
+                <td colspan="7"
+                    class="text-center p-10 text-gray-500">
+
+                    No hay clientes cargados.
+
+                </td>
+
+            </tr>
+
+        @endforelse
+
+        </tbody>
+
+    </table>
+
+    <div class="mt-6">
+
+        {{ $customers->links() }}
+
+    </div>
+
+</div>
+
+</x-app-layout>
