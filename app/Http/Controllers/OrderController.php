@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Customer;
 use Illuminate\Http\Request;
+use App\Models\Payment;
 
 class OrderController extends Controller
 {
@@ -42,12 +43,31 @@ class OrderController extends Controller
             'delivery_date' => 'nullable|date',
             'status' => 'required|max:50',
             'notes' => 'nullable',
+            'deposit' => 'nullable|numeric|min:0',
         ]);
 
         $validated['order_date'] = $validated['order_date'] ?: now()->toDateString();
         $validated['cost'] = $validated['cost'] ?? 0;
 
         $order = Order::create($validated);
+
+        if (($validated['deposit'] ?? 0) > 0) {
+
+    Payment::create([
+        'order_id'     => $order->id,
+        'payment_date' => $order->order_date,
+        'amount'       => $validated['deposit'],
+        'method'       => 'Seña',
+        'reference'    => null,
+        'notes'        => 'Seña inicial',
+    ]);
+
+    if ($order->status == 'Presupuesto') {
+        $order->update([
+            'status' => 'Señado'
+        ]);
+    }
+}
 
         return redirect()
             ->route('orders.show', $order)
@@ -96,11 +116,13 @@ class OrderController extends Controller
     }
 
     public function destroy(Order $order)
-    {
-        $order->delete();
+{
+    $order->payments()->delete();
 
-        return redirect()
-            ->route('orders.index')
-            ->with('success', 'Pedido eliminado.');
-    }
+    $order->delete();
+
+    return redirect()
+        ->route('orders.index')
+        ->with('success', 'Pedido eliminado.');
+}
 }

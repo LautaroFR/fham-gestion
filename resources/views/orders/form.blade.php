@@ -46,6 +46,17 @@
     </div>
 
     <div class="mb-4">
+    <label class="block mb-1">Seña recibida</label>
+    <input
+        name="deposit"
+        type="number"
+        step="0.01"
+        min="0"
+        value="{{ old('deposit', 0) }}"
+        class="w-full border rounded p-2">
+</div>
+
+    <div class="mb-4">
         <label class="block mb-1">Costo estimado</label>
         <input name="cost" type="number" step="0.01" value="{{ old('cost', $order->cost ?? 0) }}" class="w-full border rounded p-2">
     </div>
