@@ -7,7 +7,11 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ExpenseController;
 
-Route::redirect('/', '/dashboard');
+Route::get('/', function () {
+    return auth()->check()
+        ? redirect()->route('dashboard')
+        : redirect()->route('login');
+});
 
 Route::middleware(['auth'])->group(function () {
 
