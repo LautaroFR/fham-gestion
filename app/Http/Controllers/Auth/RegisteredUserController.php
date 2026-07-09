@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules;
-use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
@@ -21,20 +20,24 @@ class RegisteredUserController extends Controller
         return view('auth.register');
     }
 
-    /**
-     * @throws ValidationException
-     */
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'email' => [
+                'required',
+                'string',
+                'lowercase',
+                'email:rfc,dns',
+                'max:255',
+                'unique:' . User::class,
+            ],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => strtolower($request->email),
+            'name' => trim($request->name),
+            'email' => strtolower(trim($request->email)),
             'password' => Hash::make($request->password),
         ]);
 
@@ -42,13 +45,13 @@ class RegisteredUserController extends Controller
 
         try {
             Mail::raw(
-                "Se creó una nueva cuenta en FHAM Gestión.\n\n".
-                "Nombre: {$user->name}\n".
-                "Email: {$user->email}\n".
-                "Fecha: ".now()->format('d/m/Y H:i'),
+                "Se creó una nueva cuenta en FHAM Gestión.\n\n" .
+                "Nombre: {$user->name}\n" .
+                "Email: {$user->email}\n" .
+                "Fecha: " . now()->format('d/m/Y H:i'),
                 function ($message) use ($user) {
                     $message->to('ventas@fham.com.ar')
-                        ->subject('Nueva cuenta creada en FHAM Gestión: '.$user->email);
+                        ->subject('Nueva cuenta creada en FHAM Gestión: ' . $user->email);
                 }
             );
         } catch (\Throwable $exception) {
@@ -61,6 +64,6 @@ class RegisteredUserController extends Controller
 
         return redirect()
             ->route('login')
-            ->with('status', 'Cuenta creada correctamente. Ya podés iniciar sesión.');
+            ->with('status', 'Cuenta creada correctamente. Iniciá sesión para continuar.');
     }
 }
