@@ -17,6 +17,8 @@ class Order extends Model
         'title',
         'price',
         'cost',
+        'currency',
+        'usd_rate',
         'delivery_date',
         'status',
         'notes',
@@ -25,6 +27,9 @@ class Order extends Model
     protected $casts = [
         'order_date' => 'date',
         'delivery_date' => 'date',
+        'price' => 'decimal:2',
+        'cost' => 'decimal:2',
+        'usd_rate' => 'decimal:2',
     ];
 
     public function customer()
@@ -35,6 +40,11 @@ class Order extends Model
     public function payments()
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function currencySymbol(): string
+    {
+        return $this->currency === 'USD' ? 'U$D' : '$';
     }
 
     public function getProfitAttribute()
@@ -50,6 +60,29 @@ class Order extends Model
     public function getBalanceAttribute()
     {
         return (float) $this->price - (float) $this->collected;
+    }
+
+    public function getPriceArsAttribute()
+    {
+        if ($this->currency === 'USD' && $this->usd_rate) {
+            return (float) $this->price * (float) $this->usd_rate;
+        }
+
+        return (float) $this->price;
+    }
+
+    public function getCostArsAttribute()
+    {
+        if ($this->currency === 'USD' && $this->usd_rate) {
+            return (float) $this->cost * (float) $this->usd_rate;
+        }
+
+        return (float) $this->cost;
+    }
+
+    public function getProfitArsAttribute()
+    {
+        return $this->price_ars - $this->cost_ars;
     }
 
     public function getPaymentStatusAttribute()

@@ -38,7 +38,7 @@
                     </a>
                 </td>
                 <td class="p-3">{{ $payment->method }}</td>
-                <td class="p-3 text-right">$ {{ number_format($payment->amount,0,',','.') }}</td>
+                <td class="p-3 text-right">{{ $payment->currencySymbol() }} {{ number_format($payment->amount,0,',','.') }}</td>
                 <td class="p-3 text-right">
                     <a href="{{ route('payments.edit', $payment) }}" class="text-blue-600 hover:underline">Editar</a>
                 </td>

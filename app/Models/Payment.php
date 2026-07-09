@@ -13,6 +13,8 @@ class Payment extends Model
         'order_id',
         'payment_date',
         'amount',
+        'currency',
+        'usd_rate',
         'method',
         'reference',
         'notes',
@@ -20,10 +22,26 @@ class Payment extends Model
 
     protected $casts = [
         'payment_date' => 'date',
+        'amount' => 'decimal:2',
+        'usd_rate' => 'decimal:2',
     ];
 
     public function order()
     {
         return $this->belongsTo(Order::class);
+    }
+
+    public function currencySymbol(): string
+    {
+        return $this->currency === 'USD' ? 'U$D' : '$';
+    }
+
+    public function getAmountArsAttribute()
+    {
+        if ($this->currency === 'USD' && $this->usd_rate) {
+            return (float) $this->amount * (float) $this->usd_rate;
+        }
+
+        return (float) $this->amount;
     }
 }

@@ -38,7 +38,7 @@
     @error('title') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
     <div class="mb-4">
         <label class="block mb-1">Precio total *</label>
         <input name="price" type="number" step="0.01" value="{{ old('price', $order->price ?? '') }}" class="w-full border rounded p-2">
@@ -46,21 +46,31 @@
     </div>
 
     <div class="mb-4">
-    <label class="block mb-1">Seña recibida</label>
-    <input
-        name="deposit"
-        type="number"
-        step="0.01"
-        min="0"
-        value="{{ old('deposit', 0) }}"
-        class="w-full border rounded p-2">
-</div>
-
-    <div class="mb-4">
         <label class="block mb-1">Costo estimado</label>
         <input name="cost" type="number" step="0.01" value="{{ old('cost', $order->cost ?? 0) }}" class="w-full border rounded p-2">
     </div>
+
+    <div class="mb-4">
+        <label class="block mb-1">Moneda</label>
+        <select name="currency" class="w-full border rounded p-2">
+            <option value="ARS" @selected(old('currency', $order->currency ?? 'ARS') == 'ARS')>$</option>
+            <option value="USD" @selected(old('currency', $order->currency ?? 'ARS') == 'USD')>U$D</option>
+        </select>
+    </div>
+
+    <div class="mb-4">
+        <label class="block mb-1">Valor referencia dólar</label>
+        <input name="usd_rate" type="number" step="0.01" min="0" value="{{ old('usd_rate', $order->usd_rate ?? '') }}" class="w-full border rounded p-2" placeholder="Opcional">
+    </div>
 </div>
+
+@if(!isset($order->id))
+    <div class="mb-4">
+        <label class="block mb-1">Seña recibida</label>
+        <input name="deposit" type="number" step="0.01" min="0" value="{{ old('deposit', 0) }}" class="w-full border rounded p-2">
+        <p class="text-xs text-gray-500 mt-1">Si cargás una seña, se crea automáticamente un cobro inicial.</p>
+    </div>
+@endif
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div class="mb-4">

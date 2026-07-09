@@ -32,6 +32,8 @@ class PaymentController extends Controller
         $payment = new Payment([
             'order_id' => $request->order_id,
             'payment_date' => now()->toDateString(),
+            'currency' => $selectedOrder->currency ?? 'ARS',
+            'usd_rate' => $selectedOrder->usd_rate ?? null,
         ]);
 
         return view('payments.create', compact('orders', 'payment', 'selectedOrder'));
@@ -43,10 +45,17 @@ class PaymentController extends Controller
             'order_id' => 'required|exists:orders,id',
             'payment_date' => 'required|date',
             'amount' => 'required|numeric|min:1',
+            'currency' => 'required|in:ARS,USD',
+            'usd_rate' => 'nullable|numeric|min:0',
             'method' => 'nullable|max:100',
             'reference' => 'nullable|max:255',
             'notes' => 'nullable',
         ]);
+
+        $validated['currency'] = $validated['currency'] ?? 'ARS';
+        $validated['usd_rate'] = $validated['currency'] === 'USD'
+            ? ($validated['usd_rate'] ?? null)
+            : null;
 
         $payment = Payment::create($validated);
 
@@ -70,10 +79,17 @@ class PaymentController extends Controller
             'order_id' => 'required|exists:orders,id',
             'payment_date' => 'required|date',
             'amount' => 'required|numeric|min:1',
+            'currency' => 'required|in:ARS,USD',
+            'usd_rate' => 'nullable|numeric|min:0',
             'method' => 'nullable|max:100',
             'reference' => 'nullable|max:255',
             'notes' => 'nullable',
         ]);
+
+        $validated['currency'] = $validated['currency'] ?? 'ARS';
+        $validated['usd_rate'] = $validated['currency'] === 'USD'
+            ? ($validated['usd_rate'] ?? null)
+            : null;
 
         $payment->update($validated);
 

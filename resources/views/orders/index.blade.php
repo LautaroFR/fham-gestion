@@ -41,10 +41,10 @@
                         {{ $order->title }}
                     </a>
                 </td>
-                <td class="p-3 text-right">$ {{ number_format($order->price, 0, ',', '.') }}</td>
-                <td class="p-3 text-right">$ {{ number_format($order->collected, 0, ',', '.') }}</td>
+                <td class="p-3 text-right">{{ $order->currencySymbol() }} {{ number_format($order->price, 0, ',', '.') }}</td>
+                <td class="p-3 text-right">{{ $order->currencySymbol() }} {{ number_format($order->collected, 0, ',', '.') }}</td>
                 <td class="p-3 text-right font-semibold {{ $order->balance > 0 ? 'text-red-600' : 'text-green-700' }}">
-                    $ {{ number_format($order->balance, 0, ',', '.') }}
+                    {{ $order->currencySymbol() }} {{ number_format($order->balance, 0, ',', '.') }}
                 </td>
                 <td class="p-3">{{ $order->payment_status }}</td>
                 <td class="p-3 text-right">
